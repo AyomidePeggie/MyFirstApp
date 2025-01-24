@@ -1,0 +1,27 @@
+﻿@model List<string> 
+@{
+    ViewData["Title"] = "Privacy Policy";
+    int number = 1;
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to detail your site's privacy policy.</p>
+<table class="table table-striped">
+    <thead>
+<tr>
+    <th>
+     Sn
+    </th>
+    <th>
+        product name 
+    </th>
+</tr>
+    </thead>
+    <tbody>
+        @foreach(var P in Model)
+        {
+            <tr><td>@number</td><td>@P</td></tr>
+            number++;
+        }
+    </tbody>
+</table>
