@@ -1,0 +1,29 @@
+﻿@model List<MyFirstApp.Entities.Product>
+	@{
+		int number = 1;
+	}
+
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>sn</th>
+				<th>name</th>
+				<th>description</th>
+				<th>unit price</th>
+				<th>Category Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var P in Model)
+			{
+				<tr>
+					<td>@number</td>
+					<td>@P.Name</td>
+					<td>@P.Description</td>
+					<td> &#8358;@P.UnitPrice.ToString("N")</td>
+					<td>@P.Category.Name</td>
+				</tr>
+				number++;
+			}
+		</tbody>
+	</table>
