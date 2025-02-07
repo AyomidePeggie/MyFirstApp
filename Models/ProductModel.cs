@@ -1,4 +1,6 @@
-﻿namespace MyFirstApp.Models
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace MyFirstApp.Models
 {
 	public class ProductModel
 	{
@@ -9,5 +11,6 @@
 		public int Quantity { get; set; }
 
 		public int SelectedCategoryId {  get; set; }
+		public List<SelectListItem> Categories { get; set; }
 	}
 }

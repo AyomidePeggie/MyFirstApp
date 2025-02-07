@@ -105,5 +105,54 @@ namespace MyFirstApp.Controllers
             return RedirectToAction("ProductFromDb");
 
         }
+        [HttpGet]
+        public IActionResult EditProduct(int Id)
+        {
+            var product = _dbContext.Products.Include(p=> p.Category).FirstOrDefault(p=> p.Id==Id);
+            if (product == null) 
+            {
+                return RedirectToAction("ProductFromDb");
+
+            }
+            var productmodel = new ProductModel
+            {
+                Name = product.Name,
+                Description = product.Description,
+                Id = product.Id,
+                Quantity = product.Quantity,
+                UnitPrice = product.UnitPrice,
+                SelectedCategoryId = product.Category == null ? 0 : product.Category.Id,
+                Categories = _dbContext.Categories.ToList().Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name,
+                }).ToList()
+            };
+            return View(productmodel);
+
+        }
+        [HttpPost]
+        public IActionResult EditProduct(ProductModel model)
+        {
+            var product =_dbContext.Products.Find(model.Id);
+            if (product == null) 
+            {
+                return RedirectToAction("ProductFromDb");
+            }
+            var category = _dbContext.Categories.Find(model.SelectedCategoryId);
+            if ( category== null)
+            {
+                ModelState.AddModelError("SelectedCategoryId", "The category you selected does not exist");
+                return View(model);
+            }
+            //let's update
+            product.Name = model.Name;
+            product.Description = model.Description;
+            product.Quantity = model.Quantity;
+            product.UnitPrice = model.UnitPrice;
+            product.Category = category;
+            _dbContext.SaveChanges();
+            return RedirectToAction("ProductFromDb");
+        }
     }
 }

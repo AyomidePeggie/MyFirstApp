@@ -10,7 +10,10 @@
 				<th>name</th>
 				<th>description</th>
 				<th>unit price</th>
+				<th>Qty</th>
 				<th>Category Name</th>
+				<th></th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -21,10 +24,14 @@
 					<td>@P.Name</td>
 					<td>@P.Description</td>
 					<td> &#8358;@P.UnitPrice.ToString("N")</td>
+					<td>@P.Quantity</td>
 					<td>@P.Category.Name</td>
+					<td><a href="/products/editproduct/@P.Id">edit</a></td>
+					<td><a>delete</a></td>
 				</tr>
 				number++;
 			}
 		</tbody>
 	</table>
 	<a href="/products/AddProduct" class="btn btn-primary">Add a product</a>
+	
