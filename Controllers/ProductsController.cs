@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyFirstApp.Data;
 using MyFirstApp.Entities;
+using MyFirstApp.Models;
 
 namespace MyFirstApp.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly MyDbContext _dbContext;
-        public ProductsController(MyDbContext dbContext) 
+        public ProductsController(MyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -44,35 +45,35 @@ namespace MyFirstApp.Controllers
                 UnitPrice = 23500m
             });
 
-			products.Add(new Product
-			{
-				Id = 4,
-				Name = "Earrings",
-				Description = "Fashion accessories",
-				UnitPrice = 2500m
-			});
+            products.Add(new Product
+            {
+                Id = 4,
+                Name = "Earrings",
+                Description = "Fashion accessories",
+                UnitPrice = 2500m
+            });
 
-			products.Add(new Product
-			{
-				Id = 5,
-				Name = "Pyjamas",
-				Description = "Fashion accessories",
-				UnitPrice = 125600m
-			});
+            products.Add(new Product
+            {
+                Id = 5,
+                Name = "Pyjamas",
+                Description = "Fashion accessories",
+                UnitPrice = 125600m
+            });
 
-			products.Add(new Product
-			{
-				Id = 6,
-				Name = "Hair Bonnet",
-				Description = "Fashion accessories",
-				UnitPrice = 888800m
-			});
-			return View(products);
+            products.Add(new Product
+            {
+                Id = 6,
+                Name = "Hair Bonnet",
+                Description = "Fashion accessories",
+                UnitPrice = 888800m
+            });
+            return View(products);
         }
-        public IActionResult ProductFromDb() 
+        public IActionResult ProductFromDb()
         {
 
-            var products =_dbContext.Products.Include(p=>p.Category).ToList();
+            var products = _dbContext.Products.Include(p => p.Category).ToList();
             return View(products);
 
         }
@@ -80,12 +81,29 @@ namespace MyFirstApp.Controllers
         public IActionResult AddProduct()
         {
             var categories = _dbContext.Categories.ToList();
-            List<SelectListItem> categoriesList =categories.Select(c=>new SelectListItem
+            List<SelectListItem> categoriesList = categories.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
-                Text= c.Name,
+                Text = c.Name,
             }).ToList();
             return View(categoriesList);
+        }
+        [HttpPost]
+        public IActionResult AddProduct(ProductModel model ) 
+        {
+            var product = new Product 
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Description = model.Description,
+                UnitPrice = model.UnitPrice,
+                Quantity = model.Quantity,
+                Category =_dbContext.Categories.Find(model.SelectedCategoryId)
+            };
+            _dbContext.Products.Add(product);
+            _dbContext.SaveChanges();
+            return RedirectToAction("ProductFromDb");
+
         }
     }
 }
