@@ -154,5 +154,18 @@ namespace MyFirstApp.Controllers
             _dbContext.SaveChanges();
             return RedirectToAction("ProductFromDb");
         }
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+			var product = _dbContext.Products.Find(id);
+			if (product == null)
+			{
+				return RedirectToAction("ProductFromDb");
+			}
+            //remove the product from database
+            _dbContext.Products.Remove(product);
+            _dbContext.SaveChanges();
+            return Json(Url.Action("ProductFromDb","Products"));
+		}
     }
 }
