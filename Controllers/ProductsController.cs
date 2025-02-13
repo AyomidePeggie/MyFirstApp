@@ -89,8 +89,33 @@ namespace MyFirstApp.Controllers
             return View(categoriesList);
         }
         [HttpPost]
-        public IActionResult AddProduct(ProductModel model ) 
+        public async IActionResult AddProduct(ProductModel model ) 
         {
+            //create a list to store the file paths associated with the given product 
+            List<string> ImagePaths = new();
+
+            //handle the uploaded images 
+
+            if (model.Images!= null && model.Images.Count>0)
+            {
+                foreach(var imagefile in model.Images) 
+                {
+                    if (imagefile!=null && imagefile.Length > 0) 
+                    {
+                        //let us save the image to a location e.g a folder on a server
+                        // let us also generate a unique file name  to avoid any name clashes 
+                        var filename = Guid.NewGuid() + Path.GetExtension(imagefile.FileName);
+                        var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", filename);
+                        using (var stream = new FileStream(filepath,FileMode.Create))
+                        {
+                            await imagefile.CopyToAsync(stream);
+                        }
+                        //store the filepath 
+                        ImagePaths.Add("images/"+ filename);
+                    }
+                }
+            }
+            
             var product = new Product 
             {
                 Id = model.Id,
@@ -102,6 +127,22 @@ namespace MyFirstApp.Controllers
             };
             _dbContext.Products.Add(product);
             _dbContext.SaveChanges();
+
+            //associate the uploaded images filepath with the product 
+            if (ImagePaths.Count > 0)
+            {
+                foreach(var imagepath in ImagePaths)
+                {
+                    var image = new ProductImage
+                    {
+                        ProductId= product.Id,
+                        ImagePath= imagepath
+                    };
+                    _dbContext.ProductImages.Add(image);
+
+                }
+                _dbContext.SaveChanges();
+            }
             return RedirectToAction("ProductFromDb");
 
         }

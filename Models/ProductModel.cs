@@ -12,5 +12,7 @@ namespace MyFirstApp.Models
 
 		public int SelectedCategoryId {  get; set; }
 		public List<SelectListItem> Categories { get; set; }
+		public List<string> ImagePaths { get; set; }
+		public List<IFormFile> Images { get; set; }
 	}
 }
