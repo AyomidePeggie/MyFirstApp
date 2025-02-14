@@ -86,10 +86,12 @@ namespace MyFirstApp.Controllers
                 Value = c.Id.ToString(),
                 Text = c.Name,
             }).ToList();
-            return View(categoriesList);
+            var productModel = new ProductModel();
+            productModel.Categories = categoriesList;
+            return View(productModel);
         }
         [HttpPost]
-        public async IActionResult AddProduct(ProductModel model ) 
+        public async Task<IActionResult> AddProduct(ProductModel model ) 
         {
             //create a list to store the file paths associated with the given product 
             List<string> ImagePaths = new();
@@ -126,7 +128,7 @@ namespace MyFirstApp.Controllers
                 Category =_dbContext.Categories.Find(model.SelectedCategoryId)
             };
             _dbContext.Products.Add(product);
-            _dbContext.SaveChanges();
+           await _dbContext.SaveChangesAsync();
 
             //associate the uploaded images filepath with the product 
             if (ImagePaths.Count > 0)
@@ -141,11 +143,11 @@ namespace MyFirstApp.Controllers
                     _dbContext.ProductImages.Add(image);
 
                 }
-                _dbContext.SaveChanges();
+               await _dbContext.SaveChangesAsync();
             }
-            return RedirectToAction("ProductFromDb");
+			return Json(Url.Action("ProductFromDb", "Products"));
 
-        }
+		}
         [HttpGet]
         public IActionResult EditProduct(int Id)
         {
@@ -207,6 +209,36 @@ namespace MyFirstApp.Controllers
             _dbContext.Products.Remove(product);
             _dbContext.SaveChanges();
             return Json(Url.Action("ProductFromDb","Products"));
+		}
+        [HttpGet]
+        public IActionResult GetDetails(int id)
+        {
+			var product = _dbContext.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == id);
+			if (product == null)
+			{
+				return RedirectToAction("ProductFromDb");
+
+			}
+            var imagePaths =_dbContext.ProductImages
+                .Where(P=>P.ProductId == id)
+                .Select(i=>i.ImagePath)
+                .ToList();
+			var productmodel = new ProductModel
+			{
+				Name = product.Name,
+				Description = product.Description,
+				Id = product.Id,
+				Quantity = product.Quantity,
+				UnitPrice = product.UnitPrice,
+                ImagePaths = imagePaths,
+				SelectedCategoryId = product.Category == null ? 0 : product.Category.Id,
+				Categories = _dbContext.Categories.ToList().Select(c => new SelectListItem
+				{
+					Value = c.Id.ToString(),
+					Text = c.Name,
+				}).ToList()
+			};
+			return View(productmodel);
 		}
     }
 }
