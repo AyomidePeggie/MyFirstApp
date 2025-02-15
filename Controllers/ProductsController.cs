@@ -238,6 +238,8 @@ namespace MyFirstApp.Controllers
 					Text = c.Name,
 				}).ToList()
 			};
+            var CategoryName =_dbContext.Categories.FirstOrDefault (c => c. Id == productmodel.SelectedCategoryId)?.Name;
+            ViewBag.CategoryName = CategoryName;
 			return View(productmodel);
 		}
     }
