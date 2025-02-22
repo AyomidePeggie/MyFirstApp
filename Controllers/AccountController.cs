@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyFirstApp.Entities.Identity;
+using MyFirstApp.Helpers;
 using MyFirstApp.Models;
 using System.Security.Claims;
 
@@ -31,6 +32,10 @@ namespace MyFirstApp.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Login(LoginModel loginmodel)
 		{
+			if(!ModelState.IsValid)
+			{
+				return View(loginmodel); 
+			}
 			var user = await _userManager.FindByNameAsync(loginmodel.Username);
 			if (user == null) 
 			return View(loginmodel);
@@ -53,11 +58,11 @@ namespace MyFirstApp.Controllers
 
 				var roles = await _userManager.GetRolesAsync(user);
 
-				if (roles.Any(x => x == "Admin"))
+				if (roles.Any(x => x == RoleHelper.Admin))
 				{
 					return Redirect(Url.Action("Index", "Admin"));
 				}
-				else if (roles.Any(x => x == "Visitor"))
+				else if (roles.Any(x => x == RoleHelper.Visitor))
 				{
 					return Redirect(Url.Action("Index", "Home"));
 				}
@@ -71,7 +76,18 @@ namespace MyFirstApp.Controllers
 				return View(loginmodel);
 			}
 		}
+		[HttpPost]
+		public async Task<IActionResult> Logout()
+		{
+			await _signInManager.SignOutAsync();
+			return RedirectToAction("Index", "Home");
 
+		}
+		[HttpGet]
+		public IActionResult Register()
+		{
+			return View();
+		}
 		private string GetRedirectUrl(string returnUrl)
 		{
 			if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
@@ -80,6 +96,56 @@ namespace MyFirstApp.Controllers
 			}
 			return returnUrl;
 		}
+		[HttpPost]
+		public async Task<IActionResult> Register (RegisterModel model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			
+			}
+			var user = new ApplicationUser
+			{
+				FirstName= model.FirstName,
+				LastName= model.LastName,
+				Email= model.Email,
+				UserName = model.Username,
+
+			};
+			//create a new user with his password 
+			var result = await _userManager.CreateAsync(user, model.Password);
+			if (!result.Succeeded)
+			{
+				foreach (var error in result.Errors)
+				{
+					ModelState.TryAddModelError(error.Code, error.Description);
+
+				}
+				return View(model);
+
+			}
+			//if we did not have visitor role before, create it..
+			if (!await _roleManager.RoleExistsAsync(RoleHelper.Visitor)) 
+			{
+				var visitorRole =new IdentityRole { Name= RoleHelper.Visitor };
+				await _roleManager.CreateAsync(visitorRole);
+			}
+			//add the new user in visitor role 
+				result =await _userManager.AddToRoleAsync(user, RoleHelper.Visitor);
+			//some error checking 
+			if (result.Errors.Any())
+			{
+				foreach (var error in result.Errors)
+				{
+					ModelState.TryAddModelError(error.Code, error.Description);
+
+				}
+				
+			}
+			return RedirectToAction("Login");
+			
+		}
+
 	}
 
 	
